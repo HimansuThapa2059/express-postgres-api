@@ -1,0 +1,9 @@
+node_modules/
+
+# for ts output files
+dist/
+
+.DS_Store
+
+.env*
+!.env.example
