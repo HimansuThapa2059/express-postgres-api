@@ -6,7 +6,7 @@ import {
   getUserByIdService,
   updateUserService,
 } from "../model/model";
-import { NewUser, User } from "../schema/schema";
+import { NewUser, SafeUser } from "../schema/schema";
 
 const handleResponse = <T>(
   res: Response,
@@ -29,8 +29,8 @@ export const createUser = async (
   const { name, email, password } = req.body;
 
   try {
-    const newUser: User = await createUserService(name, email, password);
-    handleResponse<User>(res, 201, "User created successfully", newUser);
+    const newUser: SafeUser = await createUserService(name, email, password);
+    handleResponse<SafeUser>(res, 201, "User created successfully", newUser);
   } catch (err) {
     next(err);
   }
@@ -42,8 +42,8 @@ export const getAllUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const users: User[] = await getAllUsersService();
-    handleResponse<User[]>(res, 200, "Users fetched successfully", users);
+    const users: SafeUser[] = await getAllUsersService();
+    handleResponse<SafeUser[]>(res, 200, "Users fetched successfully", users);
   } catch (err) {
     next(err);
   }
@@ -57,12 +57,12 @@ export const getUserById = async (
   const { id } = req.params;
 
   try {
-    const user: User | null = await getUserByIdService(id);
+    const user: SafeUser | null = await getUserByIdService(id);
     if (!user) {
       handleResponse(res, 404, "User not found");
       return;
     }
-    handleResponse<User>(res, 200, "User fetched successfully", user);
+    handleResponse<SafeUser>(res, 200, "User fetched successfully", user);
   } catch (err) {
     next(err);
   }
@@ -74,16 +74,26 @@ export const updateUser = async (
   next: NextFunction
 ): Promise<void> => {
   const { id } = req.params;
-  const { name, email, password } = req.body;
+  const { name, email } = req.body;
 
   try {
-    const updatedUser: User = await updateUserService(
+    const updatedUser: SafeUser | null = await updateUserService(
       id,
       name,
-      email,
-      password
+      email
     );
-    handleResponse<User>(res, 200, "User updated successfully", updatedUser);
+
+    if (!updatedUser) {
+      handleResponse(res, 404, "User not found");
+      return;
+    }
+
+    handleResponse<SafeUser>(
+      res,
+      200,
+      "User updated successfully",
+      updatedUser
+    );
   } catch (err) {
     next(err);
   }
@@ -97,12 +107,12 @@ export const deleteUser = async (
   const { id } = req.params;
 
   try {
-    const user: User | null = await deleteUserService(id);
+    const user: SafeUser | null = await deleteUserService(id);
     if (!user) {
       handleResponse(res, 404, "User not found");
       return;
     }
-    handleResponse<User>(res, 200, "User deleted successfully", user);
+    handleResponse<SafeUser>(res, 200, "User deleted successfully", user);
   } catch (err) {
     next(err);
   }
