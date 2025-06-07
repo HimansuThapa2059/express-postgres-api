@@ -1,0 +1,49 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: express-postgres
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - ./.env
+    environment:
+      PORT: ${PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      DB_SSL: ${DB_SSL}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - express-postgres
+
+  db:
+    image: postgres:17.5
+    container_name: postgres-db
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - express-postgres
+    healthcheck:
+      test: ["CMD-SHELL", "sh", "-c", "pg_isready -U $DB_USER -d $DB_NAME"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
+networks:
+  express-postgres:
