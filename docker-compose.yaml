@@ -37,7 +37,7 @@ services:
     networks:
       - express-postgres
     healthcheck:
-      test: ["CMD-SHELL", "sh", "-c", "pg_isready -U $DB_USER -d $DB_NAME"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -15,4 +15,8 @@ router.get("/user/:id", getUserById);
 router.put("/user/:id", updateUser);
 router.delete("/user/:id", deleteUser);
 
+router.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
 export default router;
